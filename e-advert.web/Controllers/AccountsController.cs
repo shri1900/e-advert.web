@@ -33,24 +33,28 @@ namespace We_advert.web.Controllers
         [HttpPost]
         public async Task<IActionResult> SignUp(SignupModel model)
         {
-            if (ModelState.IsValid)
-            {
-                var user = _pool.GetUser(model.Email);
-                if (user.Status != null)
-                {
-                    ModelState.AddModelError("User exsist", "User with email id already exsist ..!");
-                    return View(model);
-                }
+            //TODO: Check how authorization works
+            return RedirectToAction("Accounts", "Confirm");
 
-                user.Attributes.Add(CognitoAttribute.Email.AttributeName, model.Email);
-                var createdUser = await _userManager.CreateAsync(user, model.Password);
+            //if (ModelState.IsValid)
+            //{
+            //    var user = _pool.GetUser(model.Email);
+            //    if (user.Status != null)
+            //    {
+            //        ModelState.AddModelError("User exsist", "User with email id already exsist ..!");
+            //        return View(model);
+            //    }
 
-                if (createdUser.Succeeded)
-                {
-                    RedirectToAction("Accounts", "Confirm");
-                }
-            }
-            return View();
+            //    user.Attributes.Add(CognitoAttribute.Name.AttributeName, model.Email);
+            //    user.Attributes.Add(CognitoAttribute.Email.AttributeName, model.Email);
+            //    var createdUser = await _userManager.CreateAsync(user, model.Password).ConfigureAwait(false);
+
+            //    if (createdUser.Succeeded)
+            //    {
+            //        RedirectToAction("Accounts", "Confirm");
+            //    }
+            //}
+            //return View();
         }
 
         [HttpGet]
@@ -105,19 +109,19 @@ namespace We_advert.web.Controllers
             if (ModelState.IsValid)
             {
                 //TODO: Remove this fake login and implement OAUTH2
-                return RedirectToAction("Index", "Home");
+                //RedirectToAction("Accounts", "Confirm");
 
-                //var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password,
-                //    model.RememberMe, false).ConfigureAwait(false);
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password,
+                    model.RememberMe, false).ConfigureAwait(false);
 
-                //if (result.Succeeded)
-                //{
-                //    return RedirectToAction("Index", "Home");
-                //}
-                //else
-                //{
-                //    ModelState.AddModelError("Login Error", "EmailId and Password do not match");
-                //}
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    ModelState.AddModelError("Login Error", "EmailId and Password do not match");
+                }
             }
 
             return View(model);
