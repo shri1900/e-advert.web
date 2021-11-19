@@ -33,28 +33,25 @@ namespace We_advert.web.Controllers
         [HttpPost]
         public async Task<IActionResult> SignUp(SignupModel model)
         {
-            //TODO: Check how authorization works
-            return RedirectToAction("Accounts", "Confirm");
+            if (ModelState.IsValid)
+            {
+                var user = _pool.GetUser(model.Email);
+                if (user.Status != null)
+                {
+                    ModelState.AddModelError("User exsist", "User with email id already exsist ..!");
+                    return View(model);
+                }
 
-            //if (ModelState.IsValid)
-            //{
-            //    var user = _pool.GetUser(model.Email);
-            //    if (user.Status != null)
-            //    {
-            //        ModelState.AddModelError("User exsist", "User with email id already exsist ..!");
-            //        return View(model);
-            //    }
+                user.Attributes.Add(CognitoAttribute.Name.AttributeName, model.Email);
+                user.Attributes.Add(CognitoAttribute.Email.AttributeName, model.Email);
+                var createdUser = await _userManager.CreateAsync(user, model.Password).ConfigureAwait(false);
 
-            //    user.Attributes.Add(CognitoAttribute.Name.AttributeName, model.Email);
-            //    user.Attributes.Add(CognitoAttribute.Email.AttributeName, model.Email);
-            //    var createdUser = await _userManager.CreateAsync(user, model.Password).ConfigureAwait(false);
-
-            //    if (createdUser.Succeeded)
-            //    {
-            //        RedirectToAction("Accounts", "Confirm");
-            //    }
-            //}
-            //return View();
+                if (createdUser.Succeeded)
+                {
+                    RedirectToAction("Accounts", "Confirm");
+                }
+            }
+            return View();
         }
 
         [HttpGet]
@@ -76,7 +73,7 @@ namespace We_advert.web.Controllers
                     return View(model);
                 }
 
-                var result = await _userManager.ConfirmEmailAsync(user, model.Code);
+                var result = await ((CognitoUserManager<CognitoUser>)_userManager).ConfirmSignUpAsync(user, model.Code, true);
                 if (result.Succeeded)
                 {
                     return RedirectToAction("Index", "Home");

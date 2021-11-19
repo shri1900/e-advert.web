@@ -11,5 +11,7 @@ namespace e_advert.web.Models.Accounts
 
         [Required(ErrorMessage = "Code is required")]
         public string Code { get; set; }
+
+        public string Name { get; set; }
     }
 }
